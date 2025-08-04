@@ -1,6 +1,13 @@
 // To execute this script, navigate to /api/seed in your browser after deployment.
-import { sql } from '@vercel/postgres';
-import { NextResponse } from 'next/server';
+//import { sql } from '@vercel/postgres';
+//import { NextResponse } from 'next/server';
+import { neon } from "@neondatabase/serverless";
+export async function getData() {
+    const sql = neon(process.env.DATABASE_URL);
+    const data = await sql`SELECT * FROM posts;`;
+    return data;
+}
+
 
 const initialFleet = [
   { id: 1, make: 'Toyota', model: 'Camry', year: 2021, rego: 'YAT-001', status: 'Rented' },
