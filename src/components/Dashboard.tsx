@@ -4,6 +4,7 @@ import FinancialsCard from './FinancialsCard';
 import CommunicationsCard from './CommunicationsCard';
 import InfringementsCard from './InfringementsCard';
 import DriverDetailModal from './DriverDetailModal';
+import AdminCard from './AdminCard';
 import { FinancialTransaction, Infringement, Driver, TransactionStatus, InfringementStatus, Car } from '../types';
 import Spinner from './ui/Spinner';
 
@@ -14,10 +15,11 @@ const Dashboard: React.FC = () => {
     const [fleet, setFleet] = useState<Car[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+    const [seeding, setSeeding] = useState(false);
+    const [seedMessage, setSeedMessage] = useState('');
     
-    const fetchData = useCallback(async () => {
-        // Don't show loader on refetch
-        if (!loading) setLoading(true); 
+    const fetchData = useCallback(async (showLoader = true) => {
+        if(showLoader) setLoading(true); 
         try {
             const [transactionsRes, infringementsRes, driversRes, fleetRes] = await Promise.all([
                 fetch('/api/transactions'),
@@ -38,13 +40,13 @@ const Dashboard: React.FC = () => {
         } catch (error) {
             console.error("Failed to load dashboard data", error);
         } finally {
-            setLoading(false);
+            if(showLoader) setLoading(false);
         }
-    }, [loading]);
+    }, []);
 
     useEffect(() => {
         fetchData();
-    }, []); // Only fetch once on initial load
+    }, [fetchData]);
     
     const handleDriverClick = (driverId: number) => {
         const driver = drivers.find(d => d.id === driverId);
@@ -81,7 +83,7 @@ const Dashboard: React.FC = () => {
                 body: JSON.stringify(data),
             });
             if (response.ok) {
-                await fetchData(); // Refetch all data to get the latest state
+                await fetchData(false); // Refetch data without full page loader
             }
         } catch(error) {
             console.error("Failed to add infringement", error);
@@ -92,7 +94,7 @@ const Dashboard: React.FC = () => {
         try {
             const response = await fetch(`/api/infringements/${infringementId}/nominate`, { method: 'PUT' });
             if (response.ok) {
-                await fetchData(); // Refetch all data for simplicity
+                await fetchData(false); // Refetch data without full page loader
             } else {
                 const errorData = await response.json();
                 alert(errorData.error || 'Failed to nominate infringement');
@@ -101,6 +103,26 @@ const Dashboard: React.FC = () => {
             console.error("Failed to nominate infringement", error);
         }
     };
+
+    const handleSeedDatabase = async () => {
+        setSeeding(true);
+        setSeedMessage('');
+        try {
+            const response = await fetch('/api/seed');
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error?.message || 'Failed to seed database.');
+            }
+            setSeedMessage('Database seeded successfully! Refreshing data...');
+            await fetchData(false);
+        } catch (error: any) {
+            console.error("Failed to seed database", error);
+            setSeedMessage(`Error: ${error.message}. This feature only works on a deployed Vercel environment.`);
+        } finally {
+            setSeeding(false);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -130,6 +152,7 @@ const Dashboard: React.FC = () => {
                         onDriverClick={handleDriverClick}
                     />
                     <CommunicationsCard drivers={drivers} />
+                    <AdminCard onSeed={handleSeedDatabase} seeding={seeding} message={seedMessage} />
                 </div>
             </div>
              {selectedDriver && (
