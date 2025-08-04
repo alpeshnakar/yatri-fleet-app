@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Car, CarStatus } from '../types';
-import { getFleetData } from '../services/mockData';
 import Card from './ui/Card';
 import Spinner from './ui/Spinner';
 
@@ -14,20 +13,12 @@ const StatusPill: React.FC<{ status: CarStatus }> = ({ status }) => {
   return <span className={`${baseClasses} ${statusClasses[status]}`}>{status}</span>;
 };
 
+interface FleetStatusCardProps {
+    fleet: Car[];
+    loading: boolean;
+}
 
-const FleetStatusCard: React.FC = () => {
-  const [fleet, setFleet] = useState<Car[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      const data = await getFleetData();
-      setFleet(data);
-      setLoading(false);
-    };
-    fetchData();
-  }, []);
+const FleetStatusCard: React.FC<FleetStatusCardProps> = ({ fleet, loading }) => {
 
   const summary = {
       total: fleet.length,

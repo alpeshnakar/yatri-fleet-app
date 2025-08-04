@@ -1,20 +1,18 @@
 import React from 'react';
 import { Driver, FinancialTransaction, Infringement, Car } from '../types';
-import { initialFleet } from '../services/mockData';
 import Modal from './ui/Modal';
 import Button from './ui/Button';
 
 interface DriverDetailModalProps {
     driver: Driver | null;
+    assignedCar: Car | undefined;
     transactions: FinancialTransaction[];
     infringements: Infringement[];
     onClose: () => void;
 }
 
-const DriverDetailModal: React.FC<DriverDetailModalProps> = ({ driver, transactions, infringements, onClose }) => {
+const DriverDetailModal: React.FC<DriverDetailModalProps> = ({ driver, assignedCar, transactions, infringements, onClose }) => {
     if (!driver) return null;
-
-    const assignedCar = initialFleet.find(c => c.rego === driver.activeCarRego);
 
     const renderSection = (title: string, items: any[], columns: { header: string, key: string, render?: (item: any) => React.ReactNode }[]) => (
         <div>
@@ -29,7 +27,7 @@ const DriverDetailModal: React.FC<DriverDetailModalProps> = ({ driver, transacti
                         </thead>
                         <tbody className="divide-y divide-slate-700">
                             {items.map((item, index) => (
-                                <tr key={index}>
+                                <tr key={item.id || index}>
                                     {columns.map(col => (
                                         <td key={col.key} className="px-3 py-2 whitespace-nowrap text-sm text-gray-300">
                                             {col.render ? col.render(item) : item[col.key]}
@@ -68,14 +66,14 @@ const DriverDetailModal: React.FC<DriverDetailModalProps> = ({ driver, transacti
             <div className="mt-6 space-y-6">
                 {renderSection("Financial History", transactions, [
                     { header: 'Date', key: 'date' },
-                    { header: 'Amount', key: 'amount', render: (item) => `$${item.amount.toFixed(2)}` },
+                    { header: 'Amount', key: 'amount', render: (item) => `$${Number(item.amount).toFixed(2)}` },
                     { header: 'Status', key: 'status' },
                     { header: 'Bank', key: 'bank' }
                 ])}
                 {renderSection("Infringement History", infringements, [
                     { header: 'Date', key: 'date' },
                     { header: 'Type', key: 'type' },
-                    { header: 'Amount', key: 'amount', render: (item) => `$${item.amount.toFixed(2)}` },
+                    { header: 'Amount', key: 'amount', render: (item) => `$${Number(item.amount).toFixed(2)}` },
                     { header: 'Status', key: 'status' },
                 ])}
             </div>
