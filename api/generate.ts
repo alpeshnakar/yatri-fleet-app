@@ -4,7 +4,6 @@
 // For now, this assumes the environment can resolve it.
 
 import { GoogleGenAI } from "@google/genai";
-import { MessageTemplate } from '../types';
 
 const API_KEY = process.env.API_KEY;
 
@@ -12,6 +11,15 @@ if (!API_KEY) {
   // This will cause the function to fail on boot if the key is not set, which is a good safeguard.
   throw new Error("Gemini API key not found. Please set the API_KEY environment variable in your Vercel project settings.");
 }
+
+// This enum is duplicated from types.ts to make the serverless function self-contained.
+// Vercel serverless functions have difficulty with relative imports outside their directory.
+enum MessageTemplate {
+    PaymentReminder = 'Payment Reminder',
+    PaymentFailed = 'Payment Failed',
+    GeneralUpdate = 'General Update',
+}
+
 
 const ai = new GoogleGenAI({ apiKey: API_KEY });
 
