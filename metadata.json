@@ -1,0 +1,5 @@
+{
+  "name": "Yatri.au Fleet Management",
+  "description": "An MVP for Yatri Enterprises, a car fleet rental business. This dashboard integrates mock-ups for open banking reconciliation with NAB/CBA and WhatsApp communications for driver notifications.",
+  "requestFramePermissions": []
+}
