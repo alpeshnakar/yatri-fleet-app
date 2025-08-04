@@ -16,7 +16,8 @@ const Dashboard: React.FC = () => {
     const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
     
     const fetchData = useCallback(async () => {
-        setLoading(true);
+        // Don't show loader on refetch
+        if (!loading) setLoading(true); 
         try {
             const [transactionsRes, infringementsRes, driversRes, fleetRes] = await Promise.all([
                 fetch('/api/transactions'),
@@ -30,20 +31,20 @@ const Dashboard: React.FC = () => {
             const driversData = await driversRes.json();
             const fleetData = await fleetRes.json();
 
-            setTransactions(transactionsData.data);
-            setInfringements(infringementsData.data);
-            setDrivers(driversData.data);
-            setFleet(fleetData.data);
+            setTransactions(transactionsData.data || []);
+            setInfringements(infringementsData.data || []);
+            setDrivers(driversData.data || []);
+            setFleet(fleetData.data || []);
         } catch (error) {
             console.error("Failed to load dashboard data", error);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [loading]);
 
     useEffect(() => {
         fetchData();
-    }, [fetchData]);
+    }, []); // Only fetch once on initial load
     
     const handleDriverClick = (driverId: number) => {
         const driver = drivers.find(d => d.id === driverId);
